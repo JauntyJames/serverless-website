@@ -12,6 +12,7 @@ class App extends Component {
       names: [{"fld_id": 1, "fld_str":""}]
     };
     this.addNewSubmission = this.addNewSubmission.bind(this)
+    this.deleteItem = this.deleteItem.bind(this)
   }
 
   addNewSubmission(formPayload) {
@@ -52,11 +53,37 @@ class App extends Component {
       .catch(error => console.error(`Error in fetch: ${error.message}`));
   }
 
+  deleteItem(formPayload) {
+    fetch(`${apigw}/v1/name`, {
+      method: 'DELETE',
+      body: JSON.stringify(formPayload)
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.text();
+      } else {
+        let error = new Error('submission error')
+        throw (error)
+      }
+    })
+    .then(text => {
+      let newNamesArray = this.state.names.filter((item) => {
+        return item.fld_id !== formPayload.fld_id
+      })
+      this.setState({ names: newNamesArray })
+    })
+    .catch(error => console.error(`Error in fetch: ${error.message}`))
+  }
+
   render(){
+    let passDownDelete = (value) => { this.deleteItem(value) }
     return (
       <div className="App">
         <header className="App-header">
-          <NameList names={this.state.names}/>
+          <NameList
+            names={this.state.names}
+            deleteItem={passDownDelete}
+          />
           <FormContainer addNewSubmission={this.addNewSubmission}/>
         </header>
       </div>
